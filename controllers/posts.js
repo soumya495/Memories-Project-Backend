@@ -2,9 +2,33 @@ import mongoose from 'mongoose'
 import PostMessage from '../models/postMessage.js'
 
 export const getPosts = async (req, res) => {
+  const limit = parseInt(req.query?.limit) || 5
+  const page = parseInt(req.query?.page) || 1
+
+  const startIndex = (page - 1) * limit
+  const endIndex = page * limit
+
+  const results = {}
+
   try {
-    const postMessages = await PostMessage.find()
-    res.status(200).json(postMessages)
+    if (endIndex < (await PostMessage.countDocuments().exec())) {
+      results.next = {
+        page: page + 1,
+        limit: limit,
+      }
+    }
+
+    if (startIndex > 0) {
+      results.previous = {
+        page: page - 1,
+        limit: limit,
+      }
+    }
+    results.results = await PostMessage.find()
+      .limit(limit)
+      .skip(startIndex)
+      .exec()
+    res.status(200).json(results)
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
