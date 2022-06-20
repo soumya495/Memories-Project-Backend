@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
 import PostMessage from '../models/postMessage.js'
+import db from 'mongoose'
 
 export const getPosts = async (req, res) => {
-  const limit = parseInt(req.query?.limit) || 5
+  const limit = parseInt(req.query?.limit) || 6
   const page = parseInt(req.query?.page) || 1
 
   const startIndex = (page - 1) * limit
@@ -24,10 +25,18 @@ export const getPosts = async (req, res) => {
         limit: limit,
       }
     }
-    results.results = await PostMessage.find()
-      .limit(limit)
-      .skip(startIndex)
-      .exec()
+
+    results.results = await PostMessage.aggregate(
+      [{ $sort: { createdAt: -1 } }, { $skip: startIndex }, { $limit: limit }],
+      { allowDiskUse: true }
+    )
+
+    // results.results = await PostMessage.find().ag
+    //   .sort({ createdAt: -1 })
+    //   .setOptions({ allowDiskUse: true })
+    //   .limit(limit)
+    //   .skip(startIndex)
+    //   .exec()
     res.status(200).json(results)
   } catch (error) {
     res.status(404).json({ message: error.message })
