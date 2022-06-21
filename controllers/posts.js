@@ -11,8 +11,12 @@ export const getPosts = async (req, res) => {
 
   const results = {}
 
+  const totalDocuments = await PostMessage.countDocuments().exec()
+
+  results.totalPosts = totalDocuments
+
   try {
-    if (endIndex < (await PostMessage.countDocuments().exec())) {
+    if (endIndex < totalDocuments) {
       results.next = {
         page: page + 1,
         limit: limit,
@@ -31,12 +35,6 @@ export const getPosts = async (req, res) => {
       { allowDiskUse: true }
     )
 
-    // results.results = await PostMessage.find().ag
-    //   .sort({ createdAt: -1 })
-    //   .setOptions({ allowDiskUse: true })
-    //   .limit(limit)
-    //   .skip(startIndex)
-    //   .exec()
     res.status(200).json(results)
   } catch (error) {
     res.status(404).json({ message: error.message })
