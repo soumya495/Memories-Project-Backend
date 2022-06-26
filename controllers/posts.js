@@ -69,7 +69,7 @@ export const getPostsBySearch = async (req, res) => {
       $or: [{ title }, { tags: { $in: tags.split(',') } }],
     })
 
-    results.results = posts
+    results.totalPosts = posts.length
 
     if (endIndex < posts.length) {
       results.next = {
@@ -84,6 +84,19 @@ export const getPostsBySearch = async (req, res) => {
         limit: limit,
       }
     }
+
+    results.results = posts.slice(startIndex, endIndex)
+
+    // can't figure out how this works lol 🙂
+    // results.results = await PostMessage.aggregate(
+    //   [
+    //     { $match: { title: title, tags: { $in: tags.split(',') } } },
+    //     { $sort: { createdAt: -1 } },
+    //     { $skip: startIndex },
+    //     { $limit: limit },
+    //   ],
+    //   { allowDiskUse: true }
+    // )
 
     res.json(results)
   } catch (error) {
