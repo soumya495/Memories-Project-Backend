@@ -11,11 +11,11 @@ export const getPosts = async (req, res) => {
 
   const results = {}
 
-  const totalDocuments = await PostMessage.countDocuments().exec()
-
-  results.totalPosts = totalDocuments
-
   try {
+    const totalDocuments = await PostMessage.countDocuments().exec()
+
+    results.totalPosts = totalDocuments
+
     if (endIndex < totalDocuments) {
       results.next = {
         page: page + 1,
@@ -55,12 +55,37 @@ export const createPost = async (req, res) => {
 export const getPostsBySearch = async (req, res) => {
   const { searchQuery, tags } = req.query
 
+  const limit = parseInt(req.query?.limit) || 6
+  const page = parseInt(req.query?.page) || 1
+
+  const startIndex = (page - 1) * limit
+  const endIndex = page * limit
+
+  const results = {}
+
   try {
     const title = new RegExp(searchQuery, 'i')
     const posts = await PostMessage.find({
       $or: [{ title }, { tags: { $in: tags.split(',') } }],
     })
-    res.json({ data: posts })
+
+    results.results = posts
+
+    if (endIndex < posts.length) {
+      results.next = {
+        page: page + 1,
+        limit: limit,
+      }
+    }
+
+    if (startIndex > 0) {
+      results.previous = {
+        page: page - 1,
+        limit: limit,
+      }
+    }
+
+    res.json(results)
   } catch (error) {
     res.status(404).json({ message: error.message })
     console.log('search results error.......', error)
