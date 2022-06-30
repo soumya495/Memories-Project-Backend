@@ -105,6 +105,19 @@ export const getPostsBySearch = async (req, res) => {
   }
 }
 
+export const getPost = async (req, res) => {
+  const { id: _id } = req.params
+  if (!mongoose.isValidObjectId(_id))
+    res.status(404).json({ message: 'No Post with id found!' })
+  try {
+    const post = await PostMessage.findById(_id)
+    res.json(post)
+  } catch (error) {
+    res.status(404).json({ message: error.message })
+    console.log('get post error..........', error)
+  }
+}
+
 export const updatePost = async (req, res) => {
   const { id: _id } = req.params
   const updPost = req.body

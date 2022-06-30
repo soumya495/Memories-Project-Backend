@@ -4,6 +4,7 @@ import {
   getPosts,
   createPost,
   getPostsBySearch,
+  getPost,
   updatePost,
   deletePost,
 } from '../controllers/posts.js'
@@ -14,6 +15,7 @@ const router = express.Router()
 router.get('/', getPosts)
 router.post('/', auth, createPost)
 router.get('/search', getPostsBySearch)
+router.get('/:id', getPost)
 router.patch('/:id', auth, updatePost)
 router.delete('/:id', auth, deletePost)
 
